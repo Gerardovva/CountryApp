@@ -1,8 +1,9 @@
 import { CacheStoreI } from './../interfaces/chace-store.interface';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, delay, map, of } from 'rxjs';
+import { Observable, catchError, delay, map, of, tap } from 'rxjs';
 import { Country } from '../interfaces/country';
+import { Region } from '../interfaces/region.type';
 
 @Injectable({ providedIn: 'root' })
 export class CountriesService {
@@ -20,9 +21,17 @@ export class CountriesService {
     //constructor
     constructor(private http: HttpClient) {
         console.log('countriesService init');
-
+        this.loadFromLocalStorage();
     }
 
+    private saveToLocalStorage() {
+        localStorage.setItem('cacheStore', JSON.stringify(this.cacheStore));
+    }
+
+    private loadFromLocalStorage() {
+        if (!localStorage.getItem('cacheStore')) return;
+        this.cacheStore = JSON.parse(localStorage.getItem('cacheStore')!);
+    }
 
     private getCountriespRequest(url: string): Observable<Country[]> {
         return this.http.get<Country[]>(url)
@@ -44,19 +53,28 @@ export class CountriesService {
     //método para buscar por capital
     searchCapital(term: string): Observable<Country[]> {
         const url = `${this.apiUrl}/capital/${term}`;
-        return this.getCountriespRequest(url);
+        return this.getCountriespRequest(url).pipe(
+            tap((countries) => this.cacheStore.byCapital = { term: term, countries: countries }),
+            tap(() => this.saveToLocalStorage())
+        )
     }
 
     //método para buscar por pais 
-    searchCountry(tem: string): Observable<Country[]> {
-        const url = `${this.apiUrl}/name/${tem}`
-        return this.getCountriespRequest(url);
+    searchCountry(term: string): Observable<Country[]> {
+        const url = `${this.apiUrl}/name/${term}`
+        return this.getCountriespRequest(url).pipe(
+            tap((countries) => this.cacheStore.byCountries = { term: term, countries: countries }),
+            tap(() => this.saveToLocalStorage()),
+        )
     }
 
     //método para buscar por region
-    searchRegion(tem: string): Observable<Country[]> {
-        const url = `${this.apiUrl}/region/${tem}`
-        return this.getCountriespRequest(url);
+    searchRegion(region: Region): Observable<Country[]> {
+        const url = `${this.apiUrl}/region/${region}`
+        return this.getCountriespRequest(url).pipe(
+            tap((countries) => this.cacheStore.byRegion = { region, countries: countries }),
+            tap(() => this.saveToLocalStorage())
+        )
     }
 
 
