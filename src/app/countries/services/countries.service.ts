@@ -10,17 +10,16 @@ export class CountriesService {
     //propiedades
     private apiUrl: string = 'https://restcountries.com/v3.1'
 
-    public cacheStore: CacheStoreI = {
 
+    public cacheStore: CacheStoreI = {
         byCapital: { term: '', countries: [] },
         byCountries: { term: '', countries: [] },
         byRegion: { region: '', countries: [] },
-
     }
 
     //constructor
     constructor(private http: HttpClient) {
-        console.log('countriesService init');
+        // console.log('countriesService init');
         this.loadFromLocalStorage();
     }
 

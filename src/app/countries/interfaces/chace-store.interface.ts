@@ -5,7 +5,6 @@ export interface CacheStoreI {
     byCapital: TermCountriesI;
     byCountries: TermCountriesI;
     byRegion: RegionCountries; 
-
 }
 
 export interface TermCountriesI {
